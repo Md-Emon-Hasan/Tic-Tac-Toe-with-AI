@@ -103,4 +103,4 @@ def reset():
     return jsonify({"message": "Game reset", "game_state": game_state})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
