@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe AI</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
+        <h1 class="my-4">Tic-Tac-Toe</h1>
+        <h2 class="my-4">Player vs AI</h2>
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <div id="message" class="my-3"></div>
+        <button id="reset-btn" class="btn btn-primary btn-lg">Reset Game</button>
+
+        <hr class="my-4">
+        
+        <div class="developer-section">
+            <p>Developed by Md Emon Hasan | <a href="https://github.com/Md-Emon-Hasan" target="_blank">GitHub</a></p>
+        </div>
+    </div>
+    
+    <script>
+        const board = document.getElementById('board');
+        const message = document.getElementById('message');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        // Handle player moves
+        board.addEventListener('click', function(e) {
+            if (e.target.classList.contains('cell')) {
+                const position = e.target.getAttribute('data-index');
+                
+                fetch('/move', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ position: position })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        message.textContent = data.error;
+                    } else {
+                        updateBoard(data.game_state);
+                        if (data.winner) {
+                            message.textContent = `Winner: ${data.winner}`;
+                            board.classList.add('disabled');
+                        } else {
+                            message.textContent = `Turn: ${data.turn}`;
+                        }
+                    }
+                });
+            }
+        });
+
+        // Update the board UI
+        function updateBoard(gameState) {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                cell.textContent = gameState[index];
+                cell.classList.add('fade-in');  // Animation on each move
+            });
+        }
+
+        // Handle game reset
+        resetBtn.addEventListener('click', function() {
+            fetch('/reset', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    updateBoard(data.game_state);
+                    message.textContent = 'Game reset. Turn: X';
+                    board.classList.remove('disabled');
+                });
+        });
+    </script>
+</body>
+</html>
